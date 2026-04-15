@@ -32,7 +32,7 @@ Detect the active mode from the slash command or task description and load the c
 | `/review-ops qa` | `modes/qa.md` |
 | `/review-ops synthesis` | `modes/synthesis.md` |
 | `/review-ops audit` | `modes/audit.md` |
-| `/review-ops status` | Read `data/tracker.tsv` and render a dashboard |
+| `/review-ops status` | `modes/status.md` |
 
 ## Human-in-the-Loop Mandate
 This system extracts and recommends. A human reviewer must verify all extractions before final use. The agent's role is to do the heavy lifting accurately — not to make final decisions.
