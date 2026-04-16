@@ -1,14 +1,22 @@
 # Mode: extract — Single Paper Extraction
 
 ## Trigger
-`/review-ops extract [paper_filename]`
+`/review-ops extract [paper_filename_or_study_id]`
 
 ## Purpose
 Read a single paper and populate every field in the extraction form, producing a
 complete, flagged, source-traced extraction record.
 
+This mode handles both first pass (R1) and second pass (R2) extractions.
+**The pass is determined automatically** from which files already exist — you
+never specify a pass number manually.
+
+---
+
 ## Pre-flight Checks
-Before extracting, verify all three context files exist and are populated:
+
+### 1. Context files
+Verify all three context files exist and are populated:
 - `config/review-profile.yml` — must have title and quality_tool set
 - `forms/extraction-form.md` — must exist (run `/review-ops form` first if not)
 - `modes/_shared.md` — must have PICO and inclusion/exclusion criteria filled in
@@ -16,12 +24,35 @@ Before extracting, verify all three context files exist and are populated:
 If any file is missing or unpopulated, halt and state exactly what needs to be
 completed before extraction can proceed.
 
-Also verify the target paper exists in `papers/`. Accepted formats:
+### 2. Paper file
+Verify the target paper exists in `papers/`. Accepted formats:
 - `.md` transcript
 - `.pdf` (read via file tool)
 - `.txt`
 
 If the paper is not found, halt and list what is present in `papers/`.
+
+### 3. Resolve study_id
+Look up the study_id in `data/tracker.tsv` by matching the paper filename.
+If no matching row exists in the tracker, halt:
+> "No tracker entry found for [paper]. Add a row to data/tracker.tsv with
+> status PENDING before extracting."
+
+### 4. Determine extraction pass
+Check for existing extraction files:
+
+| R1 file exists? | R2 file exists? | Action |
+|---|---|---|
+| No | — | **Run R1 pass** |
+| Yes | No | **Run R2 pass** |
+| Yes | Yes | **Halt** — both passes complete. Run `/review-ops validate [study_id]`. |
+
+#### ⚠️ R2 independence rule
+If running R2, **do NOT read `extractions/[study_id]-extraction-R1.md`**.
+Your extraction must be fully independent. Reading R1 before completing R2
+invalidates the dual-extraction protocol and must not happen under any
+circumstances. Confirm at the start of R2: "Running independent R2 pass.
+R1 file will not be read until reconciliation."
 
 ---
 
@@ -87,35 +118,63 @@ State the reason if not High.
 
 ## Output
 
-### Primary output
+### R1 Pass
+
 Write the completed extraction to:
 ```
 extractions/[study_id]-extraction-R1.md
 ```
 Use `templates/extraction-output.md` as the base structure.
+Set `Extraction Pass: R1` in the header.
 Populate every block with the fields from `forms/extraction-form.md`.
 Do not leave any field row blank — every field must have either a value or `[NOT REPORTED]`.
 
-### Tracker update
-Append one row to `data/tracker.tsv`:
-
+**Tracker update — append one new row:**
 ```
 [study_id]	[paper_title]	[extractor_initials]	[YYYY-MM-DD]	[completeness_%]	[flag_list]	EXTRACTED_R1
 ```
-
 - `flag_list`: comma-separated list of field labels that carry any flag
-- `status`: always `EXTRACTED_R1` after a first-pass extraction
 
-### Console output
-After writing the file, print a brief extraction summary:
+**Console output:**
 ```
-✅ Extraction complete: [study_id]
+✅ R1 Extraction complete: [study_id]
    Completeness: [X%]
    Mandatory fields missing: [n]
    Flags: [NOT REPORTED: n] [AMBIGUOUS: n] [CONFLICT: n] [CALCULATED: n] [FROM FIGURE: n]
    Confidence: [High / Medium / Low]
    Output: extractions/[study_id]-extraction-R1.md
-   Next step: /review-ops qa [paper] — then assign to second reviewer for R2 pass
+   Next step: assign paper to second reviewer for R2 pass → /review-ops extract [paper]
+```
+
+---
+
+### R2 Pass
+
+Write the completed extraction to:
+```
+extractions/[study_id]-extraction-R2.md
+```
+Use `templates/extraction-output.md` as the base structure.
+Set `Extraction Pass: R2` in the header.
+Populate every block with the fields from `forms/extraction-form.md`.
+Do not leave any field row blank — every field must have either a value or `[NOT REPORTED]`.
+
+**Tracker update — update the existing row, do NOT append a new row:**
+Find the row in `data/tracker.tsv` where `study_id` matches. Update:
+- `extractor` column: append ` / [R2_extractor_initials]` to the existing value
+- `status` column: change `EXTRACTED_R1` → `EXTRACTED_R2`
+
+Do not create a second tracker row — one row per paper is the invariant.
+
+**Console output:**
+```
+✅ R2 Extraction complete: [study_id]
+   Completeness: [X%]
+   Mandatory fields missing: [n]
+   Flags: [NOT REPORTED: n] [AMBIGUOUS: n] [CONFLICT: n] [CALCULATED: n] [FROM FIGURE: n]
+   Confidence: [High / Medium / Low]
+   Output: extractions/[study_id]-extraction-R2.md
+   Next step: /review-ops validate [study_id]
 ```
 
 ---
@@ -124,6 +183,7 @@ After writing the file, print a brief extraction summary:
 - Never populate a field with inferred or assumed data
 - Never round or paraphrase a p-value — copy exactly as written
 - Never resolve a `[CONFLICT]` — surface it; a human adjudicates
-- Never mark status as anything other than `EXTRACTED_R1` after a first pass
+- **R2 only**: never read the R1 extraction file before completing your own pass
+- Never append a second tracker row for R2 — update the existing row in-place
 - If a result exists only in a figure, note `[FROM FIGURE]` and record the
   approximate value with explicit uncertainty (e.g., `~42% [FROM FIGURE, ±2%]`)
