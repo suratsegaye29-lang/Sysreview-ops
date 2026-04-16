@@ -1,0 +1,25 @@
+# Paper source files (potentially large/sensitive — manage locally)
+papers/*
+!papers/.gitkeep
+
+# Extraction outputs (researcher data — not for version control by default)
+extractions/*
+!extractions/.gitkeep
+
+# Generated reports
+reports/*
+!reports/.gitkeep
+
+# Generated extraction forms
+forms/*
+!forms/.gitkeep
+
+# Batch worker logs
+logs/*
+!logs/.gitkeep
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
