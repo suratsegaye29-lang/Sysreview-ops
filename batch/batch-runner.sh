@@ -83,6 +83,7 @@ for ((i=0; i<TOTAL; i+=MAX_PARALLEL)); do
     claude -p "$BATCH_PROMPT" \
       --var STUDY_ID="$STUDY_ID" \
       --var PAPER_FILE="$PAPER_FILE" \
+      --var PASS="R1" \
       --var EXTRACTOR="$EXTRACTOR" \
       --var FORM_PATH="forms/extraction-form.md" \
       > "logs/${STUDY_ID}-worker.log" 2>&1 &
