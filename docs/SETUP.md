@@ -10,7 +10,7 @@
 ```bash
 git clone https://github.com/YOUR_USERNAME/review-ops.git
 cd review-ops
-mkdir -p logs  # for batch worker logs
+mkdir -p papers extractions reports forms logs
 chmod +x batch/batch-runner.sh
 ```
 

@@ -1,0 +1,40 @@
+# review-profile.yml — Fill in all fields before running any commands.
+# Copy of review-profile.example.yml. Fields left blank will cause agents to halt.
+# SETUP_COMPLETE: false  ← change to true only after all fields below are filled.
+
+review:
+  title: ""
+  prospero_id: ""
+  lead_reviewer: ""
+  co_reviewers: []
+  date_range:
+    from: ""
+    to: ""
+
+pico:
+  population: ""
+  intervention: ""
+  comparator: ""
+  outcome: ""
+  study_design: ""
+
+quality_tool: "RoB2"  # Options: RoB2 | ROBINS-I | NOS | QUADAS-2 | custom
+
+inclusion_criteria:
+  - ""
+
+exclusion_criteria:
+  - ""
+
+batch:
+  max_parallel: 3
+
+extraction:
+  completeness_threshold: 80
+  dual_extraction: true
+  adjudication_threshold: 0.90
+
+output:
+  extractions_dir: "extractions/"
+  reports_dir: "reports/"
+  forms_dir: "forms/"

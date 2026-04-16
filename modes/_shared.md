@@ -1,4 +1,10 @@
 # Shared Review Context
+<!--
+SETUP_COMPLETE: false
+Change the line above to "SETUP_COMPLETE: true" only after you have filled in
+every field in this file. Until then, agents will halt and prompt you to
+complete setup before proceeding.
+-->
 
 > Fill out this file before running any extraction commands. This is the review's north star — every agent decision is anchored to what's defined here.
 
