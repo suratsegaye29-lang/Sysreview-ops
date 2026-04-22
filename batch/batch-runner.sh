@@ -71,6 +71,14 @@ for ((i=0; i<TOTAL; i+=MAX_PARALLEL)); do
   PIDS=()
 
   for STUDY_ID in "${WAVE_PAPERS[@]}"; do
+    # Security: check for path traversal in STUDY_ID
+    if [[ "$STUDY_ID" == *"/"* ]]; then
+      echo "   ❌ $STUDY_ID — INVALID study_id (contains slashes). Skipping for security."
+      update_tracker_status "$STUDY_ID" "FAILED"
+      FAILED_COUNT=$((FAILED_COUNT + 1))
+      continue
+    fi
+
     PAPER_FILE=$(find "$PAPERS_DIR" -name "${STUDY_ID}*" | head -1)
     if [[ -z "$PAPER_FILE" ]]; then
       echo "   ❌ $STUDY_ID — paper file not found in $PAPERS_DIR/"
