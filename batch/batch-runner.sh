@@ -8,11 +8,16 @@ TRACKER="data/tracker.tsv"
 BATCH_PROMPT="batch/batch-prompt.md"
 PAPERS_DIR="papers"
 
+# --- Pre-flight checks ---
+if ! command -v claude &> /dev/null; then
+  echo "ERROR: 'claude' command not found."
+  echo "       Install Claude Code: https://claude.ai/code"
+  exit 1
+fi
+
 # --- Read config ---
 MAX_PARALLEL=$(grep 'max_parallel' config/review-profile.yml | awk '{print $2}')
 EXTRACTOR=$(grep 'lead_reviewer' config/review-profile.yml | awk '{print $2}' | tr -d '"')
-
-# --- Pre-flight checks ---
 if [[ -z "$MAX_PARALLEL" || ! "$MAX_PARALLEL" =~ ^[0-9]+$ ]]; then
   echo "ERROR: batch.max_parallel not set or invalid in config/review-profile.yml"
   exit 1
