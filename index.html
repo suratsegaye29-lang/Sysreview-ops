@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+  
+<html lang="en">
+  
+<head>
+  
+    <meta charset="UTF-8">
+  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title>Sysreview-ops | Multi-Agent Systematic Review System</title>
+  
+    <style>
+  
+        * {
+  
+            margin: 0;
+
+            padding: 0;
+
+            box-sizing: border-box;
+
+}
+
+        body {
+          
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+
+            min-height: 100vh;
+
+            color: #333;
+
+}
+
+        .container {
+          
+            max-width: 1200px;
+
+            margin: 0 auto;
+
+            padding: 20px;
+
+}
+
+        header {
+          
+            text-align: center;
+
+            padding: 60px 20px;
+
+            color: white;
+
+}
+
+        .logo {
+          
+            font-size: 4em;
+
+            margin-bottom: 20px;
+
+}
+
+        h1 {
+          
+            font-size: 2.5em;
+
+            margin-bottom: 15px;
+
+            font-weight: 700;
+
+}
+
+        .tagline {
+          
+            font-size: 1.3em;
+
+            opacity: 0.9;
+
+            max-width: 600px;
+
+            margin: 0 auto 30px;
+
+            line-height: 1.6;
+
+}
+
+        .badge-container {
+          
+            display: flex;
+
+            justify-content: center;
+
+            gap: 15px;
+
+            flex-wrap: wrap;
+
+            margin-top: 20px;
+
+}
+
+        .badge {
+          
+            background: rgba(255,255,255,0.2);
+
+            padding: 8px 16px;
+
+            border-radius: 20px;
+
+            font-size: 0.9em;
+
+            backdrop-filter: blur(10px);
+
+        }
+
+        .main-content {
+          
+            background: white;
+
+            border-radius: 20px;
+
+            padding: 40px;
+
+            margin: 20px 0;
+
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+
+}
+
+        .section {
+          
+            margin-bottom: 40px;
+
+}
+
+        .section:last-child {
+          
+            margin-bottom: 0;
+
+          }
+          
+        h2 {
+          
+            color: #1e3c72;
+
+            font-size: 1.8em;
+
+            margin-bottom: 20px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+}
+
+        .features-grid {
+          
+            display: grid;
+
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+
+            gap: 25px;
+
+            margin-top: 30px;
+
+            }
+
+        .feature-card {
+          
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+          
+            border-radius: 15px;
+
+            padding: 25px;
+
+            border-left: 4px solid #2a5298;
+
+            transition: transform 0.3s, box-shadow 0.3s;
+
+}
+
+        .feature-card:hover {
+          
+            transform: translateY(-5px);
+
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+
+        }
+
+        .feature-icon {
+          
+            font-size: 2em;
+
+            margin-bottom: 15px;
+
+}
+
+        .feature-title {
+          
+            font-size: 1.2em;
+
+            font-weight: 600;
+
+            color: #1e3c72;
+
+            margin-bottom: 10px;
+
+}
+
+        .feature-desc {
+          
+            color: #666;
+
+            line-height: 1.6;
+
+            font-size: 0.95em;
+
+}
+
+        .commands-section {
+          
+            background: #1e3c72;
+
+            color: white;
+
+            border-radius: 15px;
+
+            padding: 30px;
+
+            margin-top: 30px;
+
+}
+
+        .commands-section h2 {
+          
+            color: white;
+
+          }
+          
+        .command-list {
+          
+            display: grid;
+
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+
+            gap: 15px;
+
+            margin-top: 20px;
+
+            }
+
+        .command-item {
+          
+            background: rgba(255,255,255,0.1);
+
+            padding: 15px 20px;
+
+            border-radius: 10px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 15px;
+
+}
+
+        .command-code {
+          
+            background: rgba(0,0,0,0.3);
+
+            padding: 5px 12px;
+
+            border-radius: 5px;
+
+            font-family: 'Courier New', monospace;
+
+            font-size: 0.9em;
+
+            white-space: nowrap;
+
+}
+
+        .command-desc {
+          
+            font-size: 0.9em;
+
+            opacity: 0.9;
+
+}
+
+        .standards-section {
+          
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          
+            border-radius: 15px;
+
+            padding: 30px;
+
+            margin-top: 30px;
+
+            text-align: center;
+
+}
+
+        .standards-icons {
+          
+            display: flex;
+
+            justify-content: center;
+
+            gap: 40px;
+
+            margin-top: 20px;
+
+            flex-wrap: wrap;
+
+}
+
+        .standard-item {
+          
+            text-align: center;
+
+          }
+          
+        .standard-icon {
+          
+            font-size: 3em;
+
+            margin-bottom: 10px;
+
+}
+
+        .standard-name {
+          
+            font-weight: 600;
+
+            color: #1e3c72;
+
+}
+
+        .cta-section {
+          
+            text-align: center;
+
+            margin-top: 40px;
+
+}
+
+        .btn {
+          
+            display: inline-block;
+
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+
+            color: white;
+
+            padding: 15px 40px;
+
+            border-radius: 30px;
+
+            text-decoration: none;
+
+            font-weight: 600;
+
+            font-size: 1.1em;
+
+            transition: transform 0.3s, box-shadow 0.3s;
+
+            margin: 10px;
+
+        }
+
+        .btn:hover {
+          
+            transform: translateY(-3px);
+
+            box-shadow: 0 10px 30px rgba(30,60,114,0.4);
+
+}
+
+        .btn-secondary {
+          
+            background: white;
+
+            color: #1e3c72;
+
+            border: 2px solid #1e3c72;
+
+}
+
+        footer {
+          
+            text-align: center;
+
+            padding: 40px;
+
+            color: white;
+
+            opacity: 0.8;
+
+}
+
+        .footer-links {
+          
+            display: flex;
+
+            justify-content: center;
+
+            gap: 30px;
+
+            margin-bottom: 20px;
+
+            flex-wrap: wrap;
+
+}
+
+        .footer-links a {
+          
+            color: white;
+
+            text-decoration: none;
+
+}
+
+        .footer-links a:hover {
+          
+            text-decoration: underline;
+
+          }
+          
+        @media (max-width: 768px) {
+
+            h1 {
+              
+                font-size: 2em;
+
+        }
+
+            .main-content {
+              
+                padding: 25px;
+
+}
+
+            .commands-section {
+              
+                padding: 20px;
+
+}
+
+}
+
+    </style>
+      
+</head>
+      
+<body>
+      
+    <div class="container">
+      
+        <header>
+      
+            <div class="logo">📊</div>
+      
+            <h1>Sysreview-ops</h1>
+      
+            <p class="tagline">Multi-agent systematic review data extraction system powered by AI. Streamline your research workflow with PRISMA 2020 compliant tools.</p>
+      
+            <div class="badge-container">
+      
+                <span class="badge">🔬 PRISMA 2020</span>
+      
+                <span class="badge">📚 Cochrane Standards</span>
+
+                <span class="badge">🤖 AI-Powered</span>
+
+                <span class="badge">⚡ Multi-Agent</span>
+
+            </div>
+
+        </header>
+
+
+
+        <div class="main-content">
+
+            <div class="section">
+
+                <h2>🚀 Key Features</h2>
+      
+                <div class="features-grid">
+      
+                    <div class="feature-card">
+      
+                        <div class="feature-icon">📝</div>
+      
+                        <div class="feature-title">Form Generation</div>
+      
+                        <div class="feature-desc">Auto-generate extraction forms from your research questions with intelligent field mapping.</div>
+      
+                    </div>
+      
+                    <div class="feature-card">
+      
+                        <div class="feature-icon">🔍</div>
+      
+                        <div class="feature-title">Data Extraction</div>
+      
+                        <div class="feature-desc">AI-powered extraction of study data with support for single and dual reviewer modes.</div>
+      
+                    </div>
+      
+                    <div class="feature-card">
+      
+                        <div class="feature-icon">⚙️</div>
+      
+                        <div class="feature-title">Batch Processing</div>
+      
+                        <div class="feature-desc">Process multiple papers efficiently with automated pipeline management and progress tracking.</div>
+      
+                    </div>
+      
+                    <div class="feature-card">
+      
+                        <div class="feature-icon">✅</div>
+      
+                        <div class="feature-title">Validation & Reconciliation</div>
+      
+                        <div class="feature-desc">Automatic comparison of dual extractions with conflict resolution workflows.</div>
+
+                    </div>
+
+                    <div class="feature-card">
+
+                        <div class="feature-icon">⚖️</div>
+
+                        <div class="feature-title">Risk of Bias Assessment</div>
+      
+                        <div class="feature-desc">Structured quality assessment following Cochrane RoB 2.0 and ROBINS-I guidelines.</div>
+      
+                    </div>
+      
+                    <div class="feature-card">
+      
+                        <div class="feature-icon">📊</div>
+      
+                        <div class="feature-title">Narrative Synthesis</div>
+      
+                        <div class="feature-desc">Generate comprehensive synthesis reports with evidence tables and summary of findings.</div>
+      
+                    </div>
+      
+                </div>
+      
+            </div>
+      
+
+      
+            <div class="commands-section">
+      
+                <h2>⌨️ Quick Commands</h2>
+      
+                <p style="opacity: 0.9; margin-bottom: 10px;">Use these slash commands in Claude Code to interact with the system:</p>
+      
+                <div class="command-list">
+      
+                    <div class="command-item">
+      
+                        <code class="command-code">/review-ops form</code>
+      
+                        <span class="command-desc">Generate extraction form</span>
+
+                    </div>
+
+                    <div class="command-item">
+
+                        <code class="command-code">/review-ops extract</code>
+
+                        <span class="command-desc">Extract single paper</span>
+
+                    </div>
+
+                    <div class="command-item">
+
+                        <code class="command-code">/review-ops batch</code>
+
+                        <span class="command-desc">Process all pending</span>
+
+                    </div>
+
+                    <div class="command-item">
+
+                        <code class="command-code">/review-ops validate</code>
+
+                        <span class="command-desc">Reconcile dual extractions</span>
+
+                    </div>
+
+                    <div class="command-item">
+
+                        <code class="command-code">/review-ops qa</code>
+
+                        <span class="command-desc">Risk of bias assessment</span>
+      
+                    </div>
+      
+                    <div class="command-item">
+      
+                        <code class="command-code">/review-ops synthesis</code>
+      
+                        <span class="command-desc">Narrative synthesis</span>
+      
+                    </div>
+      
+                    <div class="command-item">
+      
+                        <code class="command-code">/review-ops audit</code>
+      
+                        <span class="command-desc">Pipeline integrity check</span>
+
+                    </div>
+
+                    <div class="command-item">
+
+                        <code class="command-code">/review-ops status</code>
+
+                        <span class="command-desc">Tracker dashboard</span>
+
+                    </div>
+      
+                </div>
+      
+            </div>
+      
+
+      
+            <div class="standards-section">
+      
+                <h2>📋 Compliance Standards</h2>
+      
+                <p>Built to support rigorous systematic review methodologies</p>
+
+                <div class="standards-icons">
+
+                    <div class="standard-item">
+
+                        <div class="standard-icon">📄</div>
+
+                        <div class="standard-name">PRISMA 2020</div>
+
+                    </div>
+
+                    <div class="standard-item">
+
+                        <div class="standard-icon">🔬</div>
+
+                        <div class="standard-name">Cochrane Handbook</div>
+
+                    </div>
+      
+                    <div class="standard-item">
+      
+                        <div class="standard-icon">⚖️</div>
+      
+                        <div class="standard-name">RoB 2.0</div>
+      
+                    </div>
+      
+                </div>
+      
+            </div>
+      
+
+      
+            <div class="cta-section">
+      
+                <h2>Get Started</h2>
+      
+                <p style="color: #666; margin-bottom: 20px;">Clone the repository and start your systematic review today</p>
+
+                <a href="https://github.com/suratsegaye29-lang/Sysreview-ops" class="btn">View on GitHub</a>
+
+                <a href="docs/WORKFLOW.md" class="btn btn-secondary">Read Documentation</a>
+      
+            </div>
+      
+        </div>
+      
+
+      
+        <footer>
+      
+            <div class="footer-links">
+      
+                <a href="https://github.com/suratsegaye29-lang/Sysreview-ops">GitHub Repository</a>
+      
+                <a href="docs/WORKFLOW.md">Documentation</a>
+      
+                <a href="LICENSE">MIT License</a>
+      
+            </div>
+      
+            <p>Made with ❤️ for researchers · Sysreview-ops v1.0.0</p>
+      
+        </footer>
+      
+    </div>
+      
+</body>
+      
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
