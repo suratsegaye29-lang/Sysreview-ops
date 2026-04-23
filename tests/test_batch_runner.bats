@@ -4,7 +4,14 @@ setup() {
   # Source the script so we can test its functions
   source batch/batch-runner.sh
 
-  # Create a temporary config file for testing
+  # Create a temporary tracker for testing update_tracker_status
+  TRACKER="$BATS_TMPDIR/tracker.tsv"
+  printf 'study_id\tpaper_title\textractor\tdate\tcompleteness_score\tflags\tstatus\n' > "$TRACKER"
+  printf 'study1\tPaper One\tJS\t\t\t\tPENDING\n' >> "$TRACKER"
+  printf 'study2\tPaper Two\tJS\t2023-01-01\t\t\tPENDING\n' >> "$TRACKER"
+  printf 'study3\tPaper Three\tJS\t\t\t\tPENDING\n' >> "$TRACKER"
+
+  # Create a temporary config file for testing parse_yaml_value
   TEST_CONFIG=$(mktemp)
 }
 
@@ -69,18 +76,40 @@ teardown() {
 }
 
 @test "update_tracker_status: updates status correctly" {
-  # We have to mock TRACKER since update_tracker_status uses it directly
-  TRACKER=$(mktemp)
-  # Write a dummy header and row
-  echo -e "study_id\tpaper_title\textractor\tdate\tcompleteness\tflags\tstatus\trest" > "$TRACKER"
-  echo -e "ST-1\tTitle\t\t\t\t\tPENDING\t" >> "$TRACKER"
-
-  update_tracker_status "ST-1" "FAILED"
-
-  run grep "ST-1" "$TRACKER"
+  update_tracker_status "study1" "COMPLETE"
+  today="$(date +%F)"
+  run awk -F'\t' '$1=="study1" {print $4, $7}' "$TRACKER"
   [ "$status" -eq 0 ]
-  # Status is in the 7th column, let's just make sure FAILED is in the output for that row
-  [[ "$output" == *"FAILED"* ]]
+  [ "$output" = "$today COMPLETE" ]
+}
 
-  rm -f "$TRACKER"
+@test "update_tracker_status: existing date remains unchanged" {
+  update_tracker_status "study2" "COMPLETE"
+  run awk -F'\t' '$1=="study2" {print $4, $7}' "$TRACKER"
+  [ "$status" -eq 0 ]
+  [ "$output" = "2023-01-01 COMPLETE" ]
+}
+
+@test "update_tracker_status: non-existent study_id (file remains unchanged)" {
+  cp "$TRACKER" "${TRACKER}.bak"
+  update_tracker_status "study_none" "COMPLETE"
+  run cmp -s "$TRACKER" "${TRACKER}.bak"
+  [ "$status" -eq 0 ]
+}
+
+@test "update_tracker_status: other rows untouched" {
+  update_tracker_status "study2" "COMPLETE"
+  run awk -F'\t' '$1=="study1" {print $7}' "$TRACKER"
+  [ "$status" -eq 0 ]
+  [ "$output" = "PENDING" ]
+  run awk -F'\t' '$1=="study3" {print $7}' "$TRACKER"
+  [ "$status" -eq 0 ]
+  [ "$output" = "PENDING" ]
+}
+
+@test "update_tracker_status: header row untouched" {
+  update_tracker_status "study1" "COMPLETE"
+  run head -n 1 "$TRACKER"
+  [ "$status" -eq 0 ]
+  [ "$output" = "study_id	paper_title	extractor	date	completeness_score	flags	status" ]
 }

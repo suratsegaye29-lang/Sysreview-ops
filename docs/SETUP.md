@@ -12,6 +12,7 @@ git clone https://github.com/YOUR_USERNAME/review-ops.git
 cd review-ops
 mkdir -p papers extractions reports forms logs
 chmod +x batch/batch-runner.sh
+apt install bats
 ```
 
 ## Configuration

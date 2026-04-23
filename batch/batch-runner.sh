@@ -4,44 +4,9 @@
 
 set -euo pipefail
 
-TRACKER="data/tracker.tsv"
+TRACKER="${TRACKER:-data/tracker.tsv}"
 BATCH_PROMPT="batch/batch-prompt.md"
 PAPERS_DIR="papers"
-
-# --- Pre-flight checks ---
-if ! command -v claude &> /dev/null; then
-  echo "ERROR: 'claude' command not found."
-  echo "       Install Claude Code: https://claude.ai/code"
-  exit 1
-fi
-
-# --- Read config ---
-MAX_PARALLEL=$(grep 'max_parallel' config/review-profile.yml | awk '{print $2}')
-EXTRACTOR=$(grep 'lead_reviewer' config/review-profile.yml | awk '{print $2}' | tr -d '"')
-MAX_PARALLEL=$(grep 'max_parallel' config/review-profile.yml | awk '{print $2}' || true)
-EXTRACTOR=$(grep 'lead_reviewer' config/review-profile.yml | awk '{print $2}' | tr -d '"' || true)
-
-# --- Pre-flight checks ---
-if [[ -z "$MAX_PARALLEL" || ! "$MAX_PARALLEL" =~ ^[0-9]+$ ]]; then
-  echo "ERROR: batch.max_parallel not set or invalid in config/review-profile.yml"
-  exit 1
-fi
-
-if [[ -z "$EXTRACTOR" ]]; then
-  echo "ERROR: review.lead_reviewer is not set in config/review-profile.yml."
-  echo "       All extractions must be attributable to a named reviewer."
-  exit 1
-fi
-
-if [[ ! -f "forms/extraction-form.md" ]]; then
-  echo "ERROR: forms/extraction-form.md not found. Run /review-ops form first."
-  exit 1
-fi
-
-echo "📋 review-ops batch runner starting"
-echo "   Extractor:           $EXTRACTOR"
-echo "   Max parallel workers: $MAX_PARALLEL"
-echo ""
 
 # --- Helper: update a tracker row's status by study_id ---
 update_tracker_status() {
@@ -63,10 +28,16 @@ parse_yaml_value() {
 }
 
 main() {
+  # --- Read config ---
   MAX_PARALLEL=$(parse_yaml_value 'max_parallel' config/review-profile.yml || true)
   EXTRACTOR=$(parse_yaml_value 'lead_reviewer' config/review-profile.yml || true)
 
   # --- Pre-flight checks ---
+  if ! command -v claude >/dev/null 2>&1; then
+    echo "ERROR: claude not found. Please install Claude Code."
+    exit 1
+  fi
+
   if [[ -z "$MAX_PARALLEL" || ! "$MAX_PARALLEL" =~ ^[0-9]+$ ]]; then
     echo "ERROR: batch.max_parallel not set or invalid in config/review-profile.yml"
     exit 1
@@ -95,47 +66,6 @@ main() {
     [[ "$status" == "PENDING" ]] && PENDING+=("$study_id")
   done < "$TRACKER"
 
-# --- Process in waves ---
-WAVE=1
-FAILED_COUNT=0
-
-for ((i=0; i<TOTAL; i+=MAX_PARALLEL)); do
-  WAVE_PAPERS=("${PENDING[@]:$i:$MAX_PARALLEL}")
-  echo "🌊 Wave $WAVE — processing ${#WAVE_PAPERS[@]} papers"
-
-  declare -A PID_TO_STUDY=()
-  PIDS=()
-
-  for STUDY_ID in "${WAVE_PAPERS[@]}"; do
-    # Security: check for path traversal in STUDY_ID
-    if [[ "$STUDY_ID" == *"/"* ]]; then
-      echo "   ❌ $STUDY_ID — INVALID study_id (contains slashes). Skipping for security."
-      update_tracker_status "$STUDY_ID" "FAILED"
-      FAILED_COUNT=$((FAILED_COUNT + 1))
-      continue
-    fi
-
-    PAPER_FILE=$(find "$PAPERS_DIR" -name "${STUDY_ID}*" | head -1)
-    if [[ -z "$PAPER_FILE" ]]; then
-      echo "   ❌ $STUDY_ID — paper file not found in $PAPERS_DIR/"
-      update_tracker_status "$STUDY_ID" "FAILED"
-      FAILED_COUNT=$((FAILED_COUNT + 1))
-      continue
-    fi
-
-    echo "   ▶ Starting worker: $STUDY_ID ($PAPER_FILE)"
-    claude -p "$BATCH_PROMPT" \
-      --var STUDY_ID="$STUDY_ID" \
-      --var PAPER_FILE="$PAPER_FILE" \
-      --var PASS="R1" \
-      --var EXTRACTOR="$EXTRACTOR" \
-      --var FORM_PATH="forms/extraction-form.md" \
-      > "logs/${STUDY_ID}-worker.log" 2>&1 &
-
-    PID=$!
-    PIDS+=("$PID")
-    PID_TO_STUDY[$PID]="$STUDY_ID"
-  done
   TOTAL=${#PENDING[@]}
   echo "   Papers queued: $TOTAL"
   echo ""
@@ -157,6 +87,14 @@ for ((i=0; i<TOTAL; i+=MAX_PARALLEL)); do
     PIDS=()
 
     for STUDY_ID in "${WAVE_PAPERS[@]}"; do
+      # Security: check for path traversal in STUDY_ID
+      if [[ "$STUDY_ID" == *"/"* ]]; then
+        echo "   ❌ $STUDY_ID — INVALID study_id (contains slashes). Skipping for security."
+        update_tracker_status "$STUDY_ID" "FAILED"
+        FAILED_COUNT=$((FAILED_COUNT + 1))
+        continue
+      fi
+
       PAPER_FILE=$(find "$PAPERS_DIR" -name "${STUDY_ID}*" | head -1)
       if [[ -z "$PAPER_FILE" ]]; then
         echo "   ❌ $STUDY_ID — paper file not found in $PAPERS_DIR/"
@@ -207,5 +145,5 @@ for ((i=0; i<TOTAL; i+=MAX_PARALLEL)); do
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-  main
+  main "$@"
 fi
