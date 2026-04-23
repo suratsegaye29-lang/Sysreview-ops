@@ -8,6 +8,32 @@ TRACKER="data/tracker.tsv"
 BATCH_PROMPT="batch/batch-prompt.md"
 PAPERS_DIR="papers"
 
+# --- Read config ---
+MAX_PARALLEL=$(grep 'max_parallel' config/review-profile.yml | awk '{print $2}' || true)
+EXTRACTOR=$(grep 'lead_reviewer' config/review-profile.yml | awk '{print $2}' | tr -d '"' || true)
+
+# --- Pre-flight checks ---
+if [[ -z "$MAX_PARALLEL" || ! "$MAX_PARALLEL" =~ ^[0-9]+$ ]]; then
+  echo "ERROR: batch.max_parallel not set or invalid in config/review-profile.yml"
+  exit 1
+fi
+
+if [[ -z "$EXTRACTOR" ]]; then
+  echo "ERROR: review.lead_reviewer is not set in config/review-profile.yml."
+  echo "       All extractions must be attributable to a named reviewer."
+  exit 1
+fi
+
+if [[ ! -f "forms/extraction-form.md" ]]; then
+  echo "ERROR: forms/extraction-form.md not found. Run /review-ops form first."
+  exit 1
+fi
+
+echo "📋 review-ops batch runner starting"
+echo "   Extractor:           $EXTRACTOR"
+echo "   Max parallel workers: $MAX_PARALLEL"
+echo ""
+
 # --- Helper: update a tracker row's status by study_id ---
 update_tracker_status() {
   local study_id="$1"
