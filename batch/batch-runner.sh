@@ -87,9 +87,9 @@ main() {
     PIDS=()
 
     for STUDY_ID in "${WAVE_PAPERS[@]}"; do
-      # Security: check for path traversal in STUDY_ID
-      if [[ "$STUDY_ID" == *"/"* ]]; then
-        echo "   ❌ $STUDY_ID — INVALID study_id (contains slashes). Skipping for security."
+      # Security: check for path traversal and command injection in STUDY_ID (allowlist)
+      if [[ ! "$STUDY_ID" =~ ^[A-Za-z0-9_-]+$ ]]; then
+        echo "   ❌ $STUDY_ID — INVALID study_id (contains invalid characters). Skipping for security."
         update_tracker_status "$STUDY_ID" "FAILED"
         FAILED_COUNT=$((FAILED_COUNT + 1))
         continue

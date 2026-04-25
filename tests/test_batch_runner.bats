@@ -113,3 +113,21 @@ teardown() {
   [ "$status" -eq 0 ]
   [ "$output" = "study_id	paper_title	extractor	date	completeness_score	flags	status" ]
 }
+
+@test "security: reject study_id with invalid characters" {
+  # We test the regex matching locally, simulating the logic in main()
+  STUDY_ID="invalid.study\$123"
+  run bash -c "[[ ! '$STUDY_ID' =~ ^[A-Za-z0-9_-]+$ ]] && echo 'rejected'"
+  [ "$status" -eq 0 ]
+  [ "$output" = "rejected" ]
+
+  STUDY_ID="../etc/passwd"
+  run bash -c "[[ ! '$STUDY_ID' =~ ^[A-Za-z0-9_-]+$ ]] && echo 'rejected'"
+  [ "$status" -eq 0 ]
+  [ "$output" = "rejected" ]
+
+  STUDY_ID="valid-study_123"
+  run bash -c "[[ ! '$STUDY_ID' =~ ^[A-Za-z0-9_-]+$ ]] && echo 'rejected' || echo 'accepted'"
+  [ "$status" -eq 0 ]
+  [ "$output" = "accepted" ]
+}
