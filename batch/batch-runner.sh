@@ -95,8 +95,13 @@ main() {
         continue
       fi
 
-      PAPER_FILE=$(find "$PAPERS_DIR" -name "${STUDY_ID}*" | head -1)
-      if [[ -z "$PAPER_FILE" ]]; then
+      # Enable recursive globbing for this block
+      shopt -s globstar
+      local paper_matches=("$PAPERS_DIR"/**/"${STUDY_ID}"*)
+      shopt -u globstar
+
+      PAPER_FILE="${paper_matches[0]}"
+      if [[ ! -e "$PAPER_FILE" ]]; then
         echo "   ❌ $STUDY_ID — paper file not found in $PAPERS_DIR/"
         update_tracker_status "$STUDY_ID" "FAILED"
         FAILED_COUNT=$((FAILED_COUNT + 1))
@@ -105,6 +110,10 @@ main() {
 
       echo "   ▶ Starting worker: $STUDY_ID ($PAPER_FILE)"
       claude -p "$BATCH_PROMPT" \
+        --file "$PAPER_FILE" \
+        --file "forms/extraction-form.md" \
+        --file "modes/_shared.md" \
+        --file "modes/extract.md" \
         --var STUDY_ID="$STUDY_ID" \
         --var PAPER_FILE="$PAPER_FILE" \
         --var PASS="R1" \
